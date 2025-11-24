@@ -23,14 +23,17 @@ if (process.env.RESEND_API_KEY) {
   transporter = {
     sendMail: async (options) => {
       try {
+        console.log(`📧 Sending email via Resend to: ${options.to}`);
         const data = await resend.emails.send({
           from: process.env.FROM_EMAIL || 'QBox <onboarding@resend.dev>',
           to: [options.to],
           subject: options.subject,
           html: options.html,
         });
+        console.log(`✅ Resend response:`, data);
         return { success: true, data };
       } catch (error) {
+        console.error(`❌ Resend error:`, error);
         throw error;
       }
     }
