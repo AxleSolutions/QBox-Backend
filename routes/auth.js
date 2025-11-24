@@ -3,29 +3,59 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const User = require('../models/User');
 
 // Temporary storage for verification codes (in production, use Redis or database)
 const verificationCodes = new Map();
 
-// Email transporter setup
-const transporter = nodemailer.createTransport({
-  service: process.env.EMAIL_SERVICE || 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  }
-});
+// Email configuration - support both Resend (for production) and SMTP (for local)
+let emailService;
+let transporter;
 
-// Verify email configuration on startup
-if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
-  transporter.verify((error, success) => {
-    if (error) {
-      console.log('Email configuration error:', error.message);
-    } else {
-      console.log('Email server is ready to send messages');
+if (process.env.RESEND_API_KEY) {
+  // Use Resend for production (works on Render free tier)
+  emailService = 'resend';
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  console.log('✅ Using Resend email service');
+  
+  // Create a compatible interface
+  transporter = {
+    sendMail: async (options) => {
+      try {
+        const data = await resend.emails.send({
+          from: process.env.FROM_EMAIL || 'QBox <onboarding@resend.dev>',
+          to: [options.to],
+          subject: options.subject,
+          html: options.html,
+        });
+        return { success: true, data };
+      } catch (error) {
+        throw error;
+      }
+    }
+  };
+} else if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+  // Use SMTP for local development
+  emailService = 'smtp';
+  transporter = nodemailer.createTransport({
+    service: process.env.EMAIL_SERVICE || 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD
     }
   });
+  
+  // Verify email configuration on startup
+  transporter.verify((error, success) => {
+    if (error) {
+      console.log('⚠️ Email configuration error:', error.message);
+    } else {
+      console.log('✅ SMTP email server is ready');
+    }
+  });
+} else {
+  console.log('⚠️ No email service configured');
 }
 
 // Generate JWT Token
