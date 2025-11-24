@@ -99,10 +99,10 @@ router.post('/send-verification', async (req, res) => {
 
     // Send email
     let emailSent = false;
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+    if (transporter) {
       try {
         await transporter.sendMail({
-          from: `"QBox Team" <${process.env.EMAIL_USER}>`,
+          from: process.env.FROM_EMAIL || `"QBox Team" <${process.env.EMAIL_USER}>`,
           to: email,
           subject: 'QBox - Email Verification Code',
           html: `
@@ -454,10 +454,10 @@ router.post('/forgot-password', async (req, res) => {
 
     // Send email
     let emailSent = false;
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+    if (transporter) {
       try {
         await transporter.sendMail({
-          from: `QBox <${process.env.EMAIL_USER}>`,
+          from: process.env.FROM_EMAIL || `QBox <${process.env.EMAIL_USER}>`,
           to: email,
           subject: 'QBox - Password Reset Code',
           html: `
