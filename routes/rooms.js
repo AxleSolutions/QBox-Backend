@@ -319,29 +319,40 @@ router.put('/:id/close', protect, async (req, res) => {
 // @access  Private (Lecturer)
 router.delete('/:id', protect, async (req, res) => {
   try {
+    console.log('Delete room request - Room ID:', req.params.id);
+    console.log('Delete room request - User ID:', req.user._id);
+    
     const room = await Room.findById(req.params.id);
 
     if (!room) {
+      console.log('Room not found');
       return res.status(404).json({
         success: false,
         message: 'Room not found'
       });
     }
 
+    console.log('Room found - Lecturer:', room.lecturer);
+    console.log('Room isOneTime:', room.isOneTime);
+
     // Check if user is the lecturer (skip check for one-time rooms with no lecturer)
     if (room.lecturer && room.lecturer.toString() !== req.user._id.toString()) {
+      console.log('Not authorized - Lecturer mismatch');
       return res.status(403).json({
         success: false,
         message: 'Not authorized to delete this room'
       });
     }
 
+    console.log('Deleting questions for room:', room._id);
     // Delete all questions in this room
     await Question.deleteMany({ room: room._id });
 
+    console.log('Deleting room:', room._id);
     // Delete room
     await room.deleteOne();
 
+    console.log('Room deleted successfully');
     res.status(200).json({
       success: true,
       message: 'Room and all associated questions deleted successfully'
