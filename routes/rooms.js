@@ -64,6 +64,9 @@ router.post('/', protect, async (req, res) => {
   try {
     const { roomName, questionsVisible } = req.body;
 
+    console.log('Creating room - User:', req.user);
+    console.log('User fullName:', req.user?.fullName);
+
     if (!roomName) {
       return res.status(400).json({
         success: false,
