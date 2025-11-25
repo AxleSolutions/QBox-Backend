@@ -43,6 +43,7 @@ router.post('/one-time', async (req, res) => {
           roomName: room.roomName,
           code: room.roomCode,
           lecturerName: room.lecturerName,
+          questionsVisible: room.questionsVisible,
           expiresAt: room.expiresAt
         }
       }
