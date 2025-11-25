@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
-  name: {
+  fullName: {
     type: String,
-    required: [true, 'Please provide a name'],
+    required: [true, 'Please provide a full name'],
     trim: true,
     maxlength: [100, 'Name cannot be more than 100 characters']
   },
@@ -20,17 +20,23 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Please provide a password'],
+    required: function() {
+      // Password not required if Google Sign-In is used
+      return !this.googleId;
+    },
     minlength: [6, 'Password must be at least 6 characters'],
     select: false
   },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true // Allows null values while maintaining uniqueness
+  },
   role: {
     type: String,
-    enum: ['lecturer', 'admin'],
-    default: 'lecturer'
+    enum: ['student', 'lecturer', 'admin'],
+    default: 'student'
   },
-  resetPasswordToken: String,
-  resetPasswordExpire: Date,
   createdAt: {
     type: Date,
     default: Date.now
