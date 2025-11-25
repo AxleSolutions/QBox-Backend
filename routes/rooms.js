@@ -92,7 +92,7 @@ router.post('/', protect, async (req, res) => {
       roomName,
       roomCode,
       lecturer: req.user._id,
-      lecturerName: req.user.name,
+      lecturerName: req.user.fullName,
       questionsVisible: questionsVisible !== undefined ? questionsVisible : true
     });
 
