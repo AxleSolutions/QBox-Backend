@@ -18,6 +18,21 @@ router.post('/one-time', async (req, res) => {
       });
     }
 
+    // Clean up expired one-time rooms
+    const expiredRooms = await Room.find({
+      isOneTime: true,
+      expiresAt: { $lt: new Date() }
+    });
+    
+    if (expiredRooms.length > 0) {
+      const expiredRoomIds = expiredRooms.map(room => room._id);
+      // Delete questions from expired rooms
+      await Question.deleteMany({ room: { $in: expiredRoomIds } });
+      // Delete expired rooms
+      await Room.deleteMany({ _id: { $in: expiredRoomIds } });
+      console.log(`Cleaned up ${expiredRooms.length} expired one-time rooms`);
+    }
+
     // Generate unique room code
     const roomCode = await Room.generateRoomCode();
 
@@ -72,6 +87,21 @@ router.post('/', protect, async (req, res) => {
         success: false,
         message: 'Please provide a room name'
       });
+    }
+
+    // Clean up expired one-time rooms
+    const expiredRooms = await Room.find({
+      isOneTime: true,
+      expiresAt: { $lt: new Date() }
+    });
+    
+    if (expiredRooms.length > 0) {
+      const expiredRoomIds = expiredRooms.map(room => room._id);
+      // Delete questions from expired rooms
+      await Question.deleteMany({ room: { $in: expiredRoomIds } });
+      // Delete expired rooms
+      await Room.deleteMany({ _id: { $in: expiredRoomIds } });
+      console.log(`Cleaned up ${expiredRooms.length} expired one-time rooms`);
     }
 
     // Check if lecturer already has a room with this name
