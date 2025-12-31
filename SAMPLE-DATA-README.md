@@ -22,7 +22,7 @@ MongoDB Atlas has been populated with sample data for testing!
 2. **Data Structures & Algorithms**
    - Code: `DSA202`
    - Lecturer: Dr. John Smith
-   - Visibility: 🔒 Private
+   - Visibility: Private
    - Questions: 3
 
 3. **Web Development**
@@ -40,7 +40,7 @@ MongoDB Atlas has been populated with sample data for testing!
 5. **Machine Learning Basics**
    - Code: `ML501Y`
    - Lecturer: Dr. Michael Brown
-   - Visibility: 🔒 Private
+   - Visibility: Private
    - Questions: 3
 
 ### ❓ 17 Sample Questions

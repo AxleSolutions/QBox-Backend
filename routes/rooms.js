@@ -257,8 +257,8 @@ router.post('/join', async (req, res) => {
 
 // @route   PUT /api/rooms/:id/toggle-visibility
 // @desc    Toggle question visibility (public/private)
-// @access  Private (Lecturer)
-router.put('/:id/toggle-visibility', protect, async (req, res) => {
+// @access  Private (Lecturer) or One-Time Room
+router.put('/:id/toggle-visibility', async (req, res) => {
   try {
     const room = await Room.findById(req.params.id);
 
@@ -269,12 +269,38 @@ router.put('/:id/toggle-visibility', protect, async (req, res) => {
       });
     }
 
-    // Check if user is the lecturer
-    if (room.lecturer.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to modify this room'
-      });
+    // For one-time rooms, allow without authentication
+    // For regular rooms, require authentication
+    if (!room.isOneTime) {
+      // Get token from header
+      const token = req.headers.authorization?.split(' ')[1];
+      if (!token) {
+        return res.status(401).json({
+          success: false,
+          message: 'Not authorized to access this route'
+        });
+      }
+
+      // Verify token and check user
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const User = require('../models/User');
+      const user = await User.findById(decoded.id);
+
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      // Check if user is the lecturer
+      if (room.lecturer.toString() !== user._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to modify this room'
+        });
+      }
     }
 
     // Toggle visibility
@@ -298,8 +324,8 @@ router.put('/:id/toggle-visibility', protect, async (req, res) => {
 
 // @route   PUT /api/rooms/:id/close
 // @desc    Close a room
-// @access  Private (Lecturer)
-router.put('/:id/close', protect, async (req, res) => {
+// @access  Private (Lecturer) or One-Time Room
+router.put('/:id/close', async (req, res) => {
   try {
     const room = await Room.findById(req.params.id);
 
@@ -310,12 +336,38 @@ router.put('/:id/close', protect, async (req, res) => {
       });
     }
 
-    // Check if user is the lecturer
-    if (room.lecturer.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to close this room'
-      });
+    // For one-time rooms, allow without authentication
+    // For regular rooms, require authentication
+    if (!room.isOneTime) {
+      // Get token from header
+      const token = req.headers.authorization?.split(' ')[1];
+      if (!token) {
+        return res.status(401).json({
+          success: false,
+          message: 'Not authorized to access this route'
+        });
+      }
+
+      // Verify token and check user
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const User = require('../models/User');
+      const user = await User.findById(decoded.id);
+
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      // Check if user is the lecturer
+      if (room.lecturer.toString() !== user._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'Not authorized to close this room'
+        });
+      }
     }
 
     if (room.status === 'closed') {
