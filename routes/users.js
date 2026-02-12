@@ -127,4 +127,37 @@ router.put('/change-password', protect, async (req, res) => {
   }
 });
 
+// @route   PUT /api/users/update-fcm-token
+// @desc    Update user's FCM token for notifications
+// @access  Private
+router.put('/update-fcm-token', protect, async (req, res) => {
+  try {
+    const { fcmToken } = req.body;
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    user.fcmToken = fcmToken;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'FCM token updated successfully'
+    });
+  } catch (error) {
+    console.error('Update FCM Token Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating FCM token',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

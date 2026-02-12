@@ -37,6 +37,10 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'lecturer', 'admin'],
     default: 'student'
   },
+  fcmToken: {
+    type: String,
+    required: false
+  },
   createdAt: {
     type: Date,
     default: Date.now
